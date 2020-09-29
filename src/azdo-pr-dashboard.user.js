@@ -1,7 +1,7 @@
 // ==UserScript==
 
 // @name         AzDO Pull Request Improvements
-// @version      2.49.0
+// @version      2.49.1
 // @author       Alejandro Barreto (National Instruments)
 // @description  Adds sorting and categorization to the PR dashboard. Also adds minor improvements to the PR diff experience, such as a base update selector and per-file checkboxes.
 // @license      MIT
@@ -34,6 +34,13 @@
 
 (function () {
   'use strict';
+
+  eus.globalSession.onFirst(document, 'body', async () => {
+    eus.registerCssClassConfig(document.body, 'Choose whether to expand the kanban board columns', 'ni-dont-expand-kanban-columns', {
+      'ni-expand-kanban-columns': 'Try to always expand the New and Closed columns',
+      'ni-dont-expand-kanban-columns': 'Do not expand the New and Closed columns automatically (default behavior)',
+    });
+  }
 
   // All REST API calls should fail after a timeout, instead of going on forever.
   $.ajaxSetup({ timeout: 5000 });
@@ -272,7 +279,7 @@
     });
 
     // Auto-click Show More buttons on Kanban boards, until they disappear, are hidden, or until we've pressed it 5 times (a reasonable limit which will still bring in hundreds of items into view).
-    eus.globalSession.onEveryNew(document, 'a[role="button"].see-more-items', async showMoreButton => {
+    eus.globalSession.onEveryNew(document, 'body.ni-expand-kanban-columns a[role="button"].see-more-items', async showMoreButton => {
       if (eus.seen(showMoreButton)) return;
 
       const container = showMoreButton.closest('.page-items-container');
